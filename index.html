@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My 3D Website</title>
+
+    <!-- CSS is embedded directly in the <style> tag -->
+    <style>
+      /* Basic reset and styling for the page */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        background-color: #000; /* Black background fallback */
+        color: #fff;
+        overflow: hidden; /* Hide scrollbars */
+      }
+
+      /* The canvas will be our 3D background */
+      #bg-canvas {
+        position: fixed; /* Position it relative to the viewport */
+        top: 0;
+        left: 0;
+        z-index: -1; /* Place it behind all other content */
+      }
+
+      /* Container for the overlay content */
+      .content-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Center the content */
+        text-align: center;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 4rem;
+        margin: 0;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+          0 0 20px rgba(100, 100, 255, 0.5);
+        animation: glow 2s ease-in-out infinite alternate;
+      }
+
+      p {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin-top: 20px;
+        line-height: 1.6;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+      }
+
+      /* A simple glow animation for the title */
+      @keyframes glow {
+        from {
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.3),
+            0 0 20px rgba(100, 100, 255, 0.3);
+        }
+        to {
+          text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+            0 0 30px rgba(100, 100, 255, 0.8);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The canvas where the 3D scene will be rendered -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- HTML content that sits on top of the 3D background -->
+    <div class="content-overlay">
+      <h1>Welcome to the Future</h1>
+      <p>
+        This is a fully interactive 3D website built within a single HTML file.
+        Move your mouse to look around and watch the scene come to life. The
+        background is rendered in real-time using Three.js.
+      </p>
+    </div>
+
+    <!-- Import the Three.js library from a CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- All our 3D JavaScript logic is here -->
+    <script>
+      // Make sure the script runs after the page is loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        //======== 1. SETUP THE SCENE, CAMERA, AND RENDERER ========//
+
+        // The SCENE is the container for all our 3D objects
+        const scene = new THREE.Scene();
+
+        // The CAMERA is what we see the scene through
+        // PerspectiveCamera(field of view, aspect ratio, near clip, far clip)
+        const camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          1000
+        );
+        camera.position.z = 5; // Move the camera back so we can see the objects
+
+        // The RENDERER draws the scene onto the canvas
+        const renderer = new THREE.WebGLRenderer({
+          canvas: document.querySelector("#bg-canvas"),
+          antialias: true, // Smoothens the edges of objects
+        });
+
+        // Set the size of the renderer to fill the whole window
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio); // For sharp rendering on high-res screens
+
+        //======== 2. CREATE THE 3D OBJECTS ========//
+
+        // --- Main Central Object (Icosahedron) ---
+        const geometry = new THREE.IcosahedronGeometry(1, 0); // (radius, detail)
+        const material = new THREE.MeshStandardMaterial({
+          color: 0x6f42c1, // A nice purple color
+          metalness: 0.3,
+          roughness: 0.4,
+          wireframe: true, // Show the object's wireframe structure
+        });
+        const mainObject = new THREE.Mesh(geometry, material);
+        scene.add(mainObject);
+
+        // --- Floating Particles (Stars) ---
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 5000;
+
+        const posArray = new Float32Array(particlesCount * 3); // x, y, z for each particle
+
+        for (let i = 0; i < particlesCount * 3; i++) {
+          // Assign random positions in a large sphere
+          posArray[i] = (Math.random() - 0.5) * 15;
+        }
+
+        particlesGeometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(posArray, 3)
+        );
+
+        const particlesMaterial = new THREE.PointsMaterial({
+          size: 0.008,
+          color: 0xffffff,
+        });
+        const particlesMesh = new THREE.Points(
+          particlesGeometry,
+          particlesMaterial
+        );
+        scene.add(particlesMesh);
+
+        //======== 3. ADD LIGHTING ========//
+
+        // An AmbientLight illuminates all objects in the scene equally.
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // (color, intensity)
+        scene.add(ambientLight);
+
+        // A PointLight emits light from a single point in all directions.
+        const pointLight = new THREE.PointLight(0xffffff, 1.5, 100); // (color, intensity, distance)
+        pointLight.position.set(2, 3, 4); // Position the light
+        scene.add(pointLight);
+
+        //======== 4. HANDLE INTERACTIVITY AND ANIMATION ========//
+
+        // --- Mouse Movement ---
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener("mousemove", (event) => {
+          // Normalize mouse position from -0.5 to 0.5
+          mouseX = event.clientX / window.innerWidth - 0.5;
+          mouseY = event.clientY / window.innerHeight - 0.5;
+        });
+
+        // --- Window Resizing ---
+        window.addEventListener("resize", () => {
+          // Update camera aspect ratio
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+
+          // Update renderer size
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          renderer.setPixelRatio(window.devicePixelRatio);
+        });
+
+        // --- Animation Loop ---
+        const clock = new THREE.Clock(); // A helper for keeping track of time
+
+        const animate = () => {
+          const elapsedTime = clock.getElapsedTime(); // Time since the animation started
+
+          // Animate the main object
+          mainObject.rotation.y = 0.5 * elapsedTime;
+          mainObject.rotation.x = 0.2 * elapsedTime;
+
+          // Animate the particles
+          particlesMesh.rotation.y = -0.1 * elapsedTime;
+
+          // Make the camera subtly react to mouse movement (creates a parallax effect)
+          // The '5' here controls the intensity of the effect
+          camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+          camera.position.y += (-mouseY * 5 - camera.position.y) * 0.05;
+          camera.lookAt(scene.position); // Always look at the center of the scene
+
+          // Render the new frame
+          renderer.render(scene, camera);
+
+          // Request the next frame
+          window.requestAnimationFrame(animate);
+        };
+
+        // Start the animation loop!
+        animate();
+      });
+    </script>
+  </body>
+</html>
