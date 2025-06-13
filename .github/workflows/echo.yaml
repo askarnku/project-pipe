@@ -13,3 +13,8 @@ jobs:
     steps:
       - name: Echo a message
         run: echo "Hello from GitHub Actions!"
+  echo-job-2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo a message
+        run: echo "Hello Eldar!"
