@@ -1,0 +1,15 @@
+# .github/workflows/echo.yml
+
+name: Echo Example
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the main branch
+
+jobs:
+  echo-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo a message
+        run: echo "Hello from GitHub Actions!"
