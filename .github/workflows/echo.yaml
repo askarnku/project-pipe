@@ -17,4 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Echo a message
-        run: echo "Hello Eldar!"
+        run: echo "Deploying to ${{ vars.AMAZON_USER }}"
+      - name: Echo another message
+        run: echo "Deploying to ${{ vars.AMAZON_IP }}"
