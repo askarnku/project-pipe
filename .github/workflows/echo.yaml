@@ -30,6 +30,7 @@ jobs:
         run: |
           printf "%s" "${{ vars.PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
+          cat private_key.pem
 
       - name: SSH into Amazon Linux server
         run: |
