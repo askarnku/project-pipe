@@ -23,15 +23,23 @@ jobs:
   ssh-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Read private key from secrets
-        id: read-private-key
-        run: echo "${{ secrets.PRIVATE_KEY }}"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Create private key file
         run: |
           echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
-          cat private_key.pem
 
-      - name: SSH into Amazon Linux server
+      - name: Copy index.html to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ vars.AMAZON_USER }}@${{ vars.AMAZON_IP }} "echo Connected to Amazon Linux && uname -a"
+          scp -o StrictHostKeyChecking=no -i private_key.pem index.html ${{ vars.AMAZON_USER }}@${{ vars.AMAZON_IP }}:/tmp/index.html
+
+      - name: Replace index.html on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ vars.AMAZON_USER }}@${{ vars.AMAZON_IP }} << 'EOF'
+            sudo rm -f /usr/share/nginx/html/index.html
+            sudo mv /tmp/index.html /usr/share/nginx/html/index.html
+            sudo chown root:root /usr/share/nginx/html/index.html
+            sudo chmod 644 /usr/share/nginx/html/index.html
+          EOF
