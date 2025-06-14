@@ -25,10 +25,10 @@ jobs:
     steps:
       - name: Read private key from secrets
         id: read-private-key
-        run: echo "${{ vars.PRIVATE_KEY }}"
+        run: echo "${{ secrets.PRIVATE_KEY }}"
       - name: Create private key file
         run: |
-          printf "%s" "${{ vars.PRIVATE_KEY }}" > private_key.pem
+          echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
           cat private_key.pem
 
