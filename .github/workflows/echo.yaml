@@ -19,7 +19,7 @@ jobs:
       - name: Echo a message
         run: echo "Deploying to ${{ vars.AMAZON_USER }}"
       - name: Echo another message
-        run: echo "Deploying to ${{ vars.AMAZON_IP }}"
+        run: echo "Deployings to ${{ vars.AMAZON_IP }}"
   ssh-job:
     runs-on: ubuntu-latest
     steps:
