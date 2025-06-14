@@ -23,9 +23,12 @@ jobs:
   ssh-job:
     runs-on: ubuntu-latest
     steps:
+      - name: Read private key from secrets
+        id: read-private-key
+        run: echo "${{ vars.PRIVATE_KEY }}"
       - name: Create private key file
         run: |
-          printf "%s" "${{ secrets.PRIVATE_KEY }}" > private_key.pem
+          printf "%s" "${{ vars.PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
       - name: SSH into Amazon Linux server
